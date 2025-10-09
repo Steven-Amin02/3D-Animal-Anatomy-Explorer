@@ -57,7 +57,7 @@ Leveraging [Three.js](https://threejs.org), this project provides a performant, 
 ### Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/cat-anatomy-explorer.git
+git clone https://github.com/steven-amin02/cat-anatomy-explorer.git
 cd cat-anatomy-explorer
 ```
 
@@ -142,7 +142,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-For questions or support, please open an issue or contact [youremail@example.com].
+For questions or support, please open an issue or contact [stevenameen02@gmail.com].
 
 ***
 
