@@ -3,6 +3,18 @@
 // ===============================
 const anatomyData = {
   normal: {
+    overview: {
+      title: "Normal Cat Anatomy",
+      category: "Complete Structure",
+      icon: "🐱",
+      description:
+        "The complete feline anatomy showcasing the natural external appearance and internal structure. Cats are highly specialized carnivores with remarkable agility, acute senses, and efficient hunting adaptations.",
+      details: [
+        { emoji: "🦴", label: "Skeleton", value: "244 bones providing flexibility and strength" },
+        { emoji: "💪", label: "Muscles", value: "Over 500 muscles enabling precise movement" },
+        { emoji: "❤️", label: "Organs", value: "Specialized digestive and circulatory systems" },
+      ],
+    },
     head: {
       title: "Head & Skull",
       category: "Skeletal Structure",
@@ -68,10 +80,22 @@ const anatomyData = {
       category: "Feline Structure",
       icon: "🔍",
       description: "This part doesn't have detailed info yet.",
-      details: [{ emoji: "📌", label: "Tip", value: "Map mesh names to data keys for richer info." }],
+      details: [{ emoji: "📌", label: "Tip", value: "Map mesh mesh names to data keys for richer info." }],
     },
   },
   muscle: {
+    overview: {
+      title: "Cat Muscular System",
+      category: "Muscle Anatomy",
+      icon: "💪",
+      description:
+        "The feline muscular system consists of over 500 individual muscles that provide exceptional power, speed, and precision. Cats have a high proportion of fast-twitch muscle fibers for explosive movements.",
+      details: [
+        { emoji: "⚡", label: "Fast-Twitch", value: "High percentage enables explosive jumping and sprinting" },
+        { emoji: "🏃", label: "Speed", value: "Can reach 30 mph in short bursts" },
+        { emoji: "💪", label: "Power", value: "Jump up to 6 times their body length" },
+      ],
+    },
     head: {
       title: "Facial & Jaw Muscles",
       category: "Muscular System",
@@ -139,6 +163,18 @@ const anatomyData = {
     },
   },
   skeleton: {
+    overview: {
+      title: "Cat Skeletal System",
+      category: "Bone Structure",
+      icon: "🦴",
+      description:
+        "The cat skeleton contains 244 bones (30 more than humans) with an exceptionally flexible spine and specialized joints. This structure enables their legendary agility and ability to always land on their feet.",
+      details: [
+        { emoji: "🔢", label: "Bones", value: "244 total bones including 53 vertebrae" },
+        { emoji: "🔄", label: "Flexibility", value: "Loose vertebral connections allow 180° rotation" },
+        { emoji: "🐾", label: "Digitigrade", value: "Walk on toes for silent, efficient movement" },
+      ],
+    },
     head: {
       title: "Skull & Cranium",
       category: "Skeletal System",
@@ -255,13 +291,19 @@ const hotspotConfig = {
 // Three.js Core
 // ===============================
 let scene, camera, renderer, controls, currentModel
-let normalModel = null,
+const normalModel = null,
   muscleModel = null,
   skeletonModel = null
 let raycaster, mouse
 const selectedMesh = null
 let currentState = "normal"
-let hotspots = []
+const hotspots = []
+
+const MODEL_PATHS = {
+  normal: "normal.glb",
+  muscle: "muscle.glb",
+  skeleton: "models/Chat.glb",
+}
 
 // Import Three.js
 const THREE = window.THREE
@@ -282,58 +324,98 @@ function throttle(func, limit) {
   }
 }
 
-init()
+// ===============================
+// State Management
+// ===============================
+let viewers = {}
+
+// ===============================
+// Intro Screen Handler
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+  const introScreen = document.getElementById("introScreen")
+  const startButton = document.getElementById("startButton")
+
+  startButton.addEventListener("click", () => {
+    introScreen.classList.add("hidden")
+    setTimeout(() => {
+      introScreen.remove()
+    }, 800)
+  })
+
+  // Initialize after intro
+  setTimeout(init, 100)
+})
 
 // ===============================
 // Initialization
 // ===============================
 function init() {
-  const canvas = document.getElementById("canvas3d")
+  console.log("[v0] Initializing Cat Anatomy Explorer...")
 
-  scene = new THREE.Scene()
-  camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000)
-  camera.position.set(0, 1, 3)
+  // Get model viewer elements
+  viewers = {
+    normal: document.getElementById("normalViewer"),
+    muscle: document.getElementById("muscleViewer"),
+    skeleton: document.getElementById("skeletonViewer"),
+  }
 
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight)
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
-  renderer.shadowMap.enabled = true
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap
-  renderer.outputEncoding = THREE.sRGBEncoding
-  renderer.toneMapping = THREE.ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.2
+  console.log("[v0] Model viewers found:", Object.keys(viewers))
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.9)
-  scene.add(ambientLight)
+  Object.entries(viewers).forEach(([key, viewer]) => {
+    if (!viewer) {
+      console.error(`[v0] Model viewer for ${key} not found!`)
+      return
+    }
 
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
-  directionalLight.position.set(5, 10, 7.5)
-  directionalLight.castShadow = true
-  directionalLight.shadow.camera.near = 0.1
-  directionalLight.shadow.camera.far = 50
-  directionalLight.shadow.mapSize.width = 1024
-  directionalLight.shadow.mapSize.height = 1024
-  scene.add(directionalLight)
+    viewer.addEventListener("load", () => {
+      console.log(`[v0] ${key} model loaded successfully`)
+    })
 
-  const fillLight = new THREE.DirectionalLight(0xffffff, 0.3)
-  fillLight.position.set(-5, 5, -5)
-  scene.add(fillLight)
+    viewer.addEventListener("error", (event) => {
+      console.error(`[v0] Error loading ${key} model:`, event)
+      showModelError(key)
+    })
 
-  controls = new THREE.OrbitControls(camera, renderer.domElement)
-  controls.enableDamping = true
-  controls.dampingFactor = 0.05
-  controls.minDistance = 1
-  controls.maxDistance = 10
-  controls.maxPolarAngle = Math.PI / 1.5
-  controls.autoRotate = true
-  controls.autoRotateSpeed = 0.5
+    viewer.addEventListener("model-visibility", (event) => {
+      console.log(`[v0] ${key} model visibility changed:`, event.detail.visible)
+    })
 
-  raycaster = new THREE.Raycaster()
-  mouse = new THREE.Vector2()
+    viewer.addEventListener("progress", (event) => {
+      const progress = event.detail.totalProgress * 100
+      console.log(`[v0] ${key} model loading progress: ${progress.toFixed(0)}%`)
+    })
+  })
 
   setupEventListeners()
 
-  animate()
+  // Show initial anatomy info
+  showAnatomyInfo("overview")
+
+  console.log("[v0] Initialization complete. Current state:", currentState)
+}
+
+function showModelError(modelType) {
+  const errorMessage = `
+    <div style="padding: 20px; text-align: center; color: var(--danger);">
+      <h3>⚠️ Model Not Found</h3>
+      <p>The ${modelType} model file could not be loaded.</p>
+      <p style="font-size: 12px; color: var(--muted);">
+        Expected path: /models/cat-${modelType}.glb
+      </p>
+      <p style="font-size: 12px; color: var(--muted);">
+        Please ensure the GLB model file exists at this location.
+      </p>
+    </div>
+  `
+
+  const viewer = viewers[modelType]
+  if (viewer) {
+    const poster = viewer.querySelector('[slot="poster"]')
+    if (poster) {
+      poster.innerHTML = errorMessage
+    }
+  }
 }
 
 // ===============================
@@ -344,34 +426,26 @@ function setupEventListeners() {
   document.getElementById("themeToggle").addEventListener("click", toggleTheme)
 
   // State toggle (Normal/Muscle/Skeleton)
-  document.querySelectorAll(".state-btn").forEach((btn) => {
-    btn.addEventListener("click", () => switchState(btn.dataset.state))
+  document.querySelectorAll(".state-card").forEach((card) => {
+    card.addEventListener("click", () => switchState(card.dataset.state))
   })
-
-  // File uploads
-  document.getElementById("normalModel").addEventListener("change", (e) => handleFileUpload(e, "normal"))
-  document.getElementById("muscleModel").addEventListener("change", (e) => handleFileUpload(e, "muscle"))
-  document.getElementById("skeletonModel").addEventListener("change", (e) => handleFileUpload(e, "skeleton"))
 
   // Control buttons
   document.getElementById("resetView").addEventListener("click", resetView)
-  document.getElementById("zoomIn").addEventListener("click", () => zoomCamera(0.8))
-  document.getElementById("zoomOut").addEventListener("click", () => zoomCamera(1.2))
+  document.getElementById("arButton").addEventListener("click", activateAR)
 
-  // Canvas interactions
-  const canvas = document.getElementById("canvas3d")
-  canvas.addEventListener("click", onCanvasClick)
-  canvas.addEventListener("mousemove", throttle(onCanvasMouseMove, 50))
-  canvas.addEventListener("dblclick", onCanvasDoubleClick)
+  // Model viewer interactions
+  Object.values(viewers).forEach((viewer) => {
+    viewer.addEventListener("click", () => {
+      showAnatomyInfo("overview")
+    })
+  })
 
   // Info drawer
   document.getElementById("drawerClose").addEventListener("click", closeDrawer)
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab))
   })
-
-  // Window resize
-  window.addEventListener("resize", onWindowResize)
 }
 
 // ===============================
@@ -382,8 +456,10 @@ function toggleTheme() {
   const isDark = document.body.classList.contains("dark-mode")
   document.getElementById("themeToggle").textContent = isDark ? "☀️" : "🌙"
 
-  // Update scene background
-  scene.background = isDark ? new THREE.Color(0x1f2937) : new THREE.Color(0xf9fafb)
+  // Update model viewer environment
+  Object.values(viewers).forEach((viewer) => {
+    viewer.environmentImage = isDark ? "neutral" : "neutral"
+  })
 }
 
 // ===============================
@@ -392,248 +468,32 @@ function toggleTheme() {
 function switchState(state) {
   if (state === currentState) return
 
+  console.log(`[v0] Switching state from ${currentState} to ${state}`)
+
   currentState = state
 
-  // Update button states
-  document.querySelectorAll(".state-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.state === state)
-    btn.setAttribute("aria-selected", btn.dataset.state === state)
+  // Update card states
+  document.querySelectorAll(".state-card").forEach((card) => {
+    const isActive = card.dataset.state === state
+    card.setAttribute("aria-selected", isActive)
   })
 
-  // Switch models - hide all, show only the active one
-  if (normalModel) normalModel.visible = state === "normal"
-  if (muscleModel) muscleModel.visible = state === "muscle"
-  if (skeletonModel) skeletonModel.visible = state === "skeleton"
-
-  // Update hotspots
-  updateHotspots()
-
-  // Close drawer when switching
-  closeDrawer()
-}
-
-// ===============================
-// File Upload & Model Loading
-// ===============================
-function handleFileUpload(event, modelType) {
-  const file = event.target.files[0]
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    loadModel(e.target.result, modelType)
-  }
-  reader.readAsDataURL(file)
-
-  // Update upload UI
-  const uploadArea = document.getElementById(modelType + "Upload")
-  uploadArea.classList.add("uploaded")
-  uploadArea.querySelector(".upload-text").textContent = `✓ ${file.name}`
-}
-
-function loadModel(dataUrl, modelType) {
-  showLoading(true, `Loading ${modelType} model...`)
-
-  const loader = new THREE.GLTFLoader()
-
-  loader.load(
-    dataUrl,
-    (gltf) => {
-      const model = gltf.scene
-
-      // Update to handle skeleton model removal
-      if (modelType === "normal" && normalModel) {
-        scene.remove(normalModel)
-      } else if (modelType === "muscle" && muscleModel) {
-        scene.remove(muscleModel)
-      } else if (modelType === "skeleton" && skeletonModel) {
-        scene.remove(skeletonModel)
-      }
-
-      // Setup model
-      model.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true
-          child.receiveShadow = true
-
-          // Store mesh in partMap for easy lookup
-          const meshName = child.name
-          partMap[modelType][meshName] = child
-        }
-      })
-
-      // Center and scale model
-      const box = new THREE.Box3().setFromObject(model)
-      const center = box.getCenter(new THREE.Vector3())
-      const size = box.getSize(new THREE.Vector3())
-      const maxDim = Math.max(size.x, size.y, size.z)
-      const scale = 2 / maxDim
-
-      model.scale.setScalar(scale)
-      model.position.sub(center.multiplyScalar(scale))
-
-      // Add to scene
-      scene.add(model)
-
-      // Update to handle skeleton model assignment
-      if (modelType === "normal") {
-        normalModel = model
-        model.visible = currentState === "normal"
-      } else if (modelType === "muscle") {
-        muscleModel = model
-        model.visible = currentState === "muscle"
-      } else if (modelType === "skeleton") {
-        skeletonModel = model
-        model.visible = currentState === "skeleton"
-      }
-
-      // Create hotspots for this model
-      updateHotspots()
-
-      showLoading(false)
-    },
-    (progress) => {
-      const percent = ((progress.loaded / progress.total) * 100).toFixed(0)
-      showLoading(true, `Loading ${modelType} model... ${percent}%`)
-    },
-    (error) => {
-      console.error("Error loading model:", error)
-      showLoading(false)
-      alert(`Failed to load ${modelType} model. Please try again.`)
-    },
-  )
-}
-
-// ===============================
-// Hotspot Management
-// ===============================
-function updateHotspots() {
-  // Clear existing hotspots
-  hotspots.forEach((h) => h.element.remove())
-  hotspots = []
-
-  const config = hotspotConfig[currentState]
-  if (!config) return
-
-  // Update to get the correct model based on current state
-  const model = currentState === "normal" ? normalModel : currentState === "muscle" ? muscleModel : skeletonModel
-  if (!model) return
-
-  config.forEach(({ meshName, key, offset }) => {
-    const mesh = partMap[currentState][meshName]
-    if (!mesh) return
-
-    // Get world position of mesh
-    const worldPos = new THREE.Vector3()
-    mesh.getWorldPosition(worldPos)
-    worldPos.add(new THREE.Vector3(offset.x, offset.y, offset.z))
-
-    // Create hotspot element
-    const hotspotEl = document.createElement("div")
-    hotspotEl.className = "hotspot"
-    hotspotEl.dataset.key = key
-    hotspotEl.dataset.label = anatomyData[currentState][key]?.title || key
-
-    hotspotEl.addEventListener("click", () => {
-      showPartInfo(key)
-    })
-
-    document.getElementById("hotspotLayer").appendChild(hotspotEl)
-
-    hotspots.push({
-      element: hotspotEl,
-      position: worldPos,
-      key: key,
-    })
+  // Switch model viewers
+  Object.entries(viewers).forEach(([key, viewer]) => {
+    const isActive = key === state
+    viewer.classList.toggle("active", isActive)
+    console.log(`[v0] ${key} viewer active:`, isActive)
   })
-}
 
-function updateHotspotPositions() {
-  hotspots.forEach((hotspot) => {
-    const screenPos = hotspot.position.clone()
-    screenPos.project(camera)
-
-    const canvas = document.getElementById("canvas3d")
-    const x = (screenPos.x * 0.5 + 0.5) * canvas.clientWidth
-    const y = (screenPos.y * -0.5 + 0.5) * canvas.clientHeight
-
-    // Check if behind camera
-    if (screenPos.z > 1) {
-      hotspot.element.style.display = "none"
-    } else {
-      hotspot.element.style.display = "block"
-      hotspot.element.style.left = x + "px"
-      hotspot.element.style.top = y + "px"
-    }
-  })
+  // Show anatomy info for new state
+  showAnatomyInfo("overview")
 }
 
 // ===============================
-// Canvas Interactions
+// Info Display
 // ===============================
-function onCanvasClick(event) {
-  // Handled by hotspots
-}
-
-function onCanvasMouseMove(event) {
-  const canvas = document.getElementById("canvas3d")
-  const rect = canvas.getBoundingClientRect()
-
-  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
-
-  // Raycast for hover effects
-  raycaster.setFromCamera(mouse, camera)
-  const model = currentState === "normal" ? normalModel : currentState === "muscle" ? muscleModel : skeletonModel
-
-  if (model) {
-    const intersects = raycaster.intersectObject(model, true)
-
-    if (intersects.length > 0) {
-      canvas.style.cursor = "pointer"
-    } else {
-      canvas.style.cursor = "grab"
-    }
-  }
-}
-
-function onCanvasDoubleClick(event) {
-  const canvas = document.getElementById("canvas3d")
-  const rect = canvas.getBoundingClientRect()
-
-  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
-
-  raycaster.setFromCamera(mouse, camera)
-  // Update to get the correct model based on current state
-  const model = currentState === "normal" ? normalModel : currentState === "muscle" ? muscleModel : skeletonModel
-
-  if (model) {
-    const intersects = raycaster.intersectObject(model, true)
-
-    if (intersects.length > 0) {
-      const mesh = intersects[0].object
-      const meshName = mesh.name
-
-      // Find matching key in anatomy data
-      let foundKey = "unknown"
-      for (const [key, data] of Object.entries(anatomyData[currentState])) {
-        if (meshName.toLowerCase().includes(key.toLowerCase())) {
-          foundKey = key
-          break
-        }
-      }
-
-      showPartInfo(foundKey)
-    }
-  }
-}
-
-// ===============================
-// Info Drawer
-// ===============================
-function showPartInfo(key) {
-  const data = anatomyData[currentState][key] || anatomyData[currentState].unknown
+function showAnatomyInfo(key) {
+  const data = anatomyData[currentState][key] || anatomyData[currentState].overview
 
   document.getElementById("drawerIcon").textContent = data.icon
   document.getElementById("drawerTitle").textContent = data.title
@@ -682,54 +542,28 @@ function switchTab(tabName) {
 // Camera Controls
 // ===============================
 function resetView() {
-  camera.position.set(0, 1, 3)
-  controls.target.set(0, 0, 0)
-  controls.update()
-}
+  const activeViewer = viewers[currentState]
+  console.log(`[v0] Resetting view for ${currentState} viewer`)
 
-function zoomCamera(factor) {
-  const direction = new THREE.Vector3()
-  camera.getWorldDirection(direction)
-
-  const distance = camera.position.distanceTo(controls.target)
-  const newDistance = distance * factor
-
-  if (newDistance >= controls.minDistance && newDistance <= controls.maxDistance) {
-    camera.position.addScaledVector(direction, distance - newDistance)
+  if (activeViewer) {
+    activeViewer.resetTurntableRotation()
+    activeViewer.cameraOrbit = "0deg 75deg 105%"
+    activeViewer.fieldOfView = "45deg"
+    console.log("[v0] View reset complete")
+  } else {
+    console.error("[v0] No active viewer found for reset")
   }
 }
 
-// ===============================
-// Loading Indicator
-// ===============================
-function showLoading(show, text = "Loading 3D Model...") {
-  const loading = document.getElementById("loading")
-  const loadingText = document.getElementById("loadingText")
+function activateAR() {
+  const activeViewer = viewers[currentState]
+  console.log(`[v0] Attempting to activate AR for ${currentState} viewer`)
 
-  loading.style.display = show ? "grid" : "none"
-  loadingText.textContent = text
-}
-
-// ===============================
-// Animation Loop
-// ===============================
-function animate() {
-  requestAnimationFrame(animate)
-
-  controls.update()
-  updateHotspotPositions()
-
-  renderer.render(scene, camera)
-}
-
-// ===============================
-// Window Resize
-// ===============================
-function onWindowResize() {
-  const canvas = document.getElementById("canvas3d")
-
-  camera.aspect = canvas.clientWidth / canvas.clientHeight
-  camera.updateProjectionMatrix()
-
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight)
+  if (activeViewer && activeViewer.canActivateAR) {
+    activeViewer.activateAR()
+    console.log("[v0] AR activated")
+  } else {
+    console.warn("[v0] AR not available on this device/browser")
+    alert("AR is not available on this device or browser.")
+  }
 }

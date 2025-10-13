@@ -3,13 +3,76 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <!-- Updated title to reflect cat anatomy -->
   <title>3D Cat Anatomy Explorer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 </head>
 <body>
+  <!-- Added intro screen overlay -->
+  <div class="intro-screen" id="introScreen">
+    <div class="intro-content">
+      <!-- Main intro illustration -->
+      <div class="intro-illustration">
+        <svg viewBox="0 0 200 200" class="cat-svg">
+          <!-- Cat body -->
+          <ellipse cx="100" cy="120" rx="45" ry="35" fill="#3b4cca" opacity="0.1" class="cat-body"/>
+          
+          <!-- Cat head -->
+          <circle cx="100" cy="80" r="35" fill="#3b4cca" opacity="0.15" class="cat-head"/>
+          
+          <!-- Ears -->
+          <polygon points="75,60 85,45 90,65" fill="#3b4cca" opacity="0.2" class="cat-ear-left"/>
+          <polygon points="125,60 115,45 110,65" fill="#3b4cca" opacity="0.2" class="cat-ear-right"/>
+          
+          <!-- Eyes -->
+          <circle cx="90" cy="75" r="4" fill="#00bfa6" class="cat-eye-left"/>
+          <circle cx="110" cy="75" r="4" fill="#00bfa6" class="cat-eye-right"/>
+          
+          <!-- Skeletal overlay - spine -->
+          <path d="M 100 95 Q 100 110 100 125 Q 100 135 105 145" stroke="#00bfa6" stroke-width="2" fill="none" opacity="0.6" class="skeleton-spine"/>
+          
+          <!-- Skeletal overlay - ribs -->
+          <path d="M 100 110 Q 85 115 80 120" stroke="#00bfa6" stroke-width="1.5" fill="none" opacity="0.4" class="skeleton-rib"/>
+          <path d="M 100 110 Q 115 115 120 120" stroke="#00bfa6" stroke-width="1.5" fill="none" opacity="0.4" class="skeleton-rib"/>
+          <path d="M 100 120 Q 85 125 80 130" stroke="#00bfa6" stroke-width="1.5" fill="none" opacity="0.4" class="skeleton-rib"/>
+          <path d="M 100 120 Q 115 125 120 130" stroke="#00bfa6" stroke-width="1.5" fill="none" opacity="0.4" class="skeleton-rib"/>
+          
+          <!-- Tail -->
+          <path d="M 140 130 Q 160 125 170 135" stroke="#3b4cca" stroke-width="4" fill="none" opacity="0.2" class="cat-tail"/>
+          
+          <!-- Legs -->
+          <line x1="85" y1="145" x2="85" y2="165" stroke="#3b4cca" stroke-width="3" opacity="0.15" class="cat-leg"/>
+          <line x1="115" y1="145" x2="115" y2="165" stroke="#3b4cca" stroke-width="3" opacity="0.15" class="cat-leg"/>
+        </svg>
+      </div>
+
+      <!-- Text content -->
+      <h1 class="intro-title">Cat Anatomy Explorer</h1>
+      <p class="intro-tagline">Interactive 3D Visualization Platform</p>
+      <p class="intro-description">
+        Explore feline anatomy in stunning 3D detail. Switch between Normal, Muscle, and Skeleton views to understand the complete structure of cats.
+      </p>
+
+      <!-- CTA button -->
+      <button class="intro-button" id="startButton">
+        <span>Start Exploring</span>
+        <span class="button-arrow">→</span>
+      </button>
+
+      <!-- Loading indicator -->
+      <div class="intro-loading">
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <p>Preparing 3D environment...</p>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <!-- Sidebar -->
     <aside class="sidebar" aria-label="Sidebar">
@@ -17,69 +80,153 @@
 
       <section class="section">
         <div class="section-title">Visualization mode</div>
+        <!-- Transformed simple buttons into rich interactive cards -->
         <div class="state-toggle">
-          <!-- Added third button for Skeleton mode -->
-          <button class="state-btn active" data-state="normal" role="tab" aria-selected="true">🐱 Normal</button>
-          <button class="state-btn" data-state="muscle" role="tab" aria-selected="false">💪 Muscles</button>
-          <button class="state-btn" data-state="skeleton" role="tab" aria-selected="false">🦴 Skeleton</button>
-        </div>
-      </section>
+          <div class="state-card" data-state="normal" role="tab" aria-selected="true">
+            <div class="state-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                <circle cx="8.5" cy="10.5" r="1.5"/>
+                <circle cx="15.5" cy="10.5" r="1.5"/>
+                <path d="M8 15c1 1 2.5 1.5 4 1.5s3-.5 4-1.5"/>
+              </svg>
+            </div>
+            <div class="state-card-content">
+              <div class="state-card-title">Normal</div>
+              <div class="state-card-subtitle">Complete anatomy view</div>
+            </div>
+            <div class="state-card-badge">Active</div>
+          </div>
 
-      <section class="section">
-        <div class="section-title">Load 3D models</div>
-        <div class="card">
-          <label for="normalModel" class="upload-area" id="normalUpload" tabindex="0" aria-label="Upload normal model (.glb)">
-            <div class="upload-icon">📦</div>
-            <div class="upload-text">Upload Normal Model (.glb)</div>
-          </label>
-          <input type="file" id="normalModel" accept=".glb"/>
-        </div>
-        <div class="card">
-          <label for="muscleModel" class="upload-area" id="muscleUpload" tabindex="0" aria-label="Upload muscle model (.glb)">
-            <div class="upload-icon">📦</div>
-            <div class="upload-text">Upload Muscle Model (.glb)</div>
-          </label>
-          <input type="file" id="muscleModel" accept=".glb"/>
-        </div>
-        <!-- Added upload card for skeleton model -->
-        <div class="card">
-          <label for="skeletonModel" class="upload-area" id="skeletonUpload" tabindex="0" aria-label="Upload skeleton model (.glb)">
-            <div class="upload-icon">📦</div>
-            <div class="upload-text">Upload Skeleton Model (.glb)</div>
-          </label>
-          <input type="file" id="skeletonModel" accept=".glb"/>
+          <div class="state-card" data-state="muscle" role="tab" aria-selected="false">
+            <div class="state-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <path d="M12 18v-6"/>
+                <path d="M9 15l3-3 3 3"/>
+              </svg>
+            </div>
+            <div class="state-card-content">
+              <div class="state-card-title">Muscle</div>
+              <div class="state-card-subtitle">Muscular system</div>
+            </div>
+            <div class="state-card-badge">View</div>
+          </div>
+
+          <div class="state-card" data-state="skeleton" role="tab" aria-selected="false">
+            <div class="state-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M9 3v18"/>
+                <path d="M15 3v18"/>
+                <path d="M3 9h18"/>
+                <path d="M3 15h18"/>
+              </svg>
+            </div>
+            <div class="state-card-content">
+              <div class="state-card-title">Skeleton</div>
+              <div class="state-card-subtitle">Skeletal structure</div>
+            </div>
+            <div class="state-card-badge">View</div>
+          </div>
         </div>
       </section>
     </aside>
 
     <!-- 3D Canvas Area -->
-    <main class="canvas-area" aria-label="3D canvas area">
+    <main class="canvas-area" aria-label="3D model viewer area">
       <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
 
-      <canvas id="canvas3d" aria-label="3D view"></canvas>
-
-      <div class="loading" id="loading" style="display: none;">
-        <div class="loading-inner">
+      <model-viewer
+        id="normalViewer"
+        class="model-viewer active"
+        src="/models/cat-normal.glb"
+        alt="Cat Normal Anatomy"
+        camera-controls
+        auto-rotate
+        auto-rotate-delay="1000"
+        rotation-per-second="30deg"
+        camera-orbit="0deg 75deg 105%"
+        field-of-view="45deg"
+        min-camera-orbit="auto auto 50%"
+        max-camera-orbit="auto auto 200%"
+        shadow-intensity="1"
+        exposure="1"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        loading="eager"
+      >
+        <div class="loading-overlay" slot="poster">
           <div class="spinner"></div>
-          <div id="loadingText">Loading 3D Model...</div>
+          <p>Loading Normal Model...</p>
+          <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">Path: /models/cat-normal.glb</p>
         </div>
-      </div>
+      </model-viewer>
+
+      <model-viewer
+        id="muscleViewer"
+        class="model-viewer"
+        src="/models/cat-muscle.glb"
+        alt="Cat Muscle Anatomy"
+        camera-controls
+        auto-rotate
+        auto-rotate-delay="1000"
+        rotation-per-second="30deg"
+        camera-orbit="0deg 75deg 105%"
+        field-of-view="45deg"
+        min-camera-orbit="auto auto 50%"
+        max-camera-orbit="auto auto 200%"
+        shadow-intensity="1"
+        exposure="1"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        loading="lazy"
+      >
+        <div class="loading-overlay" slot="poster">
+          <div class="spinner"></div>
+          <p>Loading Muscle Model...</p>
+          <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">Path: /models/cat-muscle.glb</p>
+        </div>
+      </model-viewer>
+
+      <model-viewer
+        id="skeletonViewer"
+        class="model-viewer"
+        src="/models/cat-skeleton.glb"
+        alt="Cat Skeleton Anatomy"
+        camera-controls
+        auto-rotate
+        auto-rotate-delay="1000"
+        rotation-per-second="30deg"
+        camera-orbit="0deg 75deg 105%"
+        field-of-view="45deg"
+        min-camera-orbit="auto auto 50%"
+        max-camera-orbit="auto auto 200%"
+        shadow-intensity="1"
+        exposure="1"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        loading="lazy"
+      >
+        <div class="loading-overlay" slot="poster">
+          <div class="spinner"></div>
+          <p>Loading Skeleton Model...</p>
+          <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">Path: /models/cat-skeleton.glb</p>
+        </div>
+      </model-viewer>
 
       <div class="controls-overlay" aria-label="View controls">
         <button class="control-btn" id="resetView" title="Reset view" aria-label="Reset view">🔄</button>
-        <button class="control-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">➕</button>
-        <button class="control-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">➖</button>
+        <button class="control-btn" id="arButton" title="View in AR" aria-label="View in AR">📱</button>
       </div>
 
       <div class="instructions">
         <span>🖱️ Drag to Rotate</span>
-        <span>🔍 Scroll to Zoom</span>
-        <span>📍 Click Hotspots</span>
-        <span>👆 Double-click parts for info</span>
+        <span>🔍 Pinch to Zoom</span>
+        <span>📱 AR Support</span>
+        <span>👆 Tap for info</span>
       </div>
-
-      <!-- Hotspots UI layer -->
-      <div class="hotspot-layer" id="hotspotLayer"></div>
 
       <!-- Info Drawer -->
       <section class="info-drawer" id="infoDrawer" aria-live="polite">
@@ -96,7 +243,7 @@
         </div>
         <div class="drawer-body">
           <div id="tab-overview">
-            <p class="drawer-desc" id="drawerDesc">Select a hotspot or double-click a part to view information.</p>
+            <p class="drawer-desc" id="drawerDesc">Select a visualization mode to explore cat anatomy in 3D.</p>
           </div>
           <div id="tab-details" style="display:none;">
             <div class="detail-grid" id="drawerDetails"></div>
@@ -111,10 +258,7 @@
     </main>
   </div>
 
-  <!-- Three.js and addons -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Simplified script -->
   <script src="script.js"></script>
 </body>
 </html>
