@@ -2,54 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>3D Cat Anatomy Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>3D Animals Anatomy Explorer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <meta name="theme-color" content="#3b4cca">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
+  <!-- Performance hint overlay -->
+  <div class="performance-hint" id="perfHint">
+    <div class="perf-icon">⚡</div>
+    <div class="perf-text">Loading optimized 3D models...</div>
+    <div class="perf-bar"><div class="perf-progress" id="perfProgress"></div></div>
+  </div>
+
   <!-- Added intro screen overlay -->
   <div class="intro-screen" id="introScreen">
     <div class="intro-content">
-      <!-- Main intro illustration -->
-      <div class="intro-illustration">
-        <svg viewBox="0 0 200 200" class="cat-svg">
-          <!-- Cat body -->
-          <ellipse cx="100" cy="120" rx="45" ry="35" fill="#3b4cca" opacity="0.1" class="cat-body"/>
-          
-          <!-- Cat head -->
-          <circle cx="100" cy="80" r="35" fill="#3b4cca" opacity="0.15" class="cat-head"/>
-          
-          <!-- Ears -->
-          <polygon points="75,60 85,45 90,65" fill="#3b4cca" opacity="0.2" class="cat-ear-left"/>
-          <polygon points="125,60 115,45 110,65" fill="#3b4cca" opacity="0.2" class="cat-ear-right"/>
-          
-          <!-- Eyes -->
-          <circle cx="90" cy="75" r="4" fill="#00bfa6" class="cat-eye-left"/>
-          <circle cx="110" cy="75" r="4" fill="#00bfa6" class="cat-eye-right"/>
-          
-          <!-- Skeletal overlay - spine -->
-          <path d="M 100 95 Q 100 110 100 125 Q 100 135 105 145" stroke="#00bfa6" stroke-width="2" fill="none" opacity="0.6" class="skeleton-spine"/>
-          
-          <!-- Skeletal overlay - ribs -->
-          <path d="M 100 110 Q 85 115 80 120" stroke="#00bfa6" stroke-width="1.5" fill="none" opacity="0.4" class="skeleton-rib"/>
-          <path d="M 100 110 Q 115 115 120 120" stroke="#00bfa6" stroke-width="1.5" fill="none" opacity="0.4" class="skeleton-rib"/>
-          <path d="M 100 120 Q 85 125 80 130" stroke="#00bfa6" stroke-width="1.5" fill="none" opacity="0.4" class="skeleton-rib"/>
-          <path d="M 100 120 Q 115 125 120 130" stroke="#00bfa6" stroke-width="1.5" fill="none" opacity="0.4" class="skeleton-rib"/>
-          
-          <!-- Tail -->
-          <path d="M 140 130 Q 160 125 170 135" stroke="#3b4cca" stroke-width="4" fill="none" opacity="0.2" class="cat-tail"/>
-          
-          <!-- Legs -->
-          <line x1="85" y1="145" x2="85" y2="165" stroke="#3b4cca" stroke-width="3" opacity="0.15" class="cat-leg"/>
-          <line x1="115" y1="145" x2="115" y2="165" stroke="#3b4cca" stroke-width="3" opacity="0.15" class="cat-leg"/>
-        </svg>
+      <!-- Lottie Animation Container -->
+      <div class="lottie-container" id="lottieContainer">
+        <div id="lottieAnimation" class="lottie-animation"></div>
+        <div class="lottie-glow"></div>
       </div>
 
       <!-- Text content -->
-      <h1 class="intro-title">Cat Anatomy Explorer</h1>
+      <h1 class="intro-title">Animals Anatomy Explorer</h1>
       <p class="intro-tagline">Interactive 3D Visualization Platform</p>
       <p class="intro-description">
         Explore feline anatomy in stunning 3D detail. Switch between Normal, Muscle, and Skeleton views to understand the complete structure of cats.
@@ -74,9 +56,14 @@
   </div>
 
   <div class="container">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+      <span class="hamburger"></span>
+    </button>
+
     <!-- Sidebar -->
-    <aside class="sidebar" aria-label="Sidebar">
-      <div class="logo">Cat Anatomy Explorer</div>
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+      <div >Cat Anatomy Explorer</div>
 
       <section class="section">
         <div class="section-title">Visualization mode</div>
@@ -136,23 +123,30 @@
 
     <!-- 3D Canvas Area -->
     <main class="canvas-area" aria-label="3D model viewer area">
+      <!-- Touch overlay for mobile gestures -->
+      <div class="touch-overlay" id="touchOverlay"></div>
+      
       <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
 
       <model-viewer
         id="normalViewer"
         class="model-viewer active"
-        src="/models/cat-normal.glb"
+        src="models/cat-normal.glb"
         alt="Cat Normal Anatomy"
         camera-controls
+        disable-tap
         auto-rotate
-        auto-rotate-delay="1000"
-        rotation-per-second="30deg"
+        auto-rotate-delay="2000"
+        rotation-per-second="20deg"
         camera-orbit="0deg 75deg 105%"
         field-of-view="45deg"
         min-camera-orbit="auto auto 50%"
         max-camera-orbit="auto auto 200%"
-        shadow-intensity="1"
+        shadow-intensity="0.8"
         exposure="1"
+        interpolation-decay="200"
+        interaction-prompt="none"
+        touch-action="pan-y"
         ar
         ar-modes="webxr scene-viewer quick-look"
         loading="eager"
@@ -160,25 +154,29 @@
         <div class="loading-overlay" slot="poster">
           <div class="spinner"></div>
           <p>Loading Normal Model...</p>
-          <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">Path: /models/cat-normal.glb</p>
+          <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">Path: models/cat-normal.glb</p>
         </div>
       </model-viewer>
 
       <model-viewer
         id="muscleViewer"
         class="model-viewer"
-        src="/models/cat-muscle.glb"
+        src="models/cat-muscle.glb"
         alt="Cat Muscle Anatomy"
         camera-controls
+        disable-tap
         auto-rotate
-        auto-rotate-delay="1000"
-        rotation-per-second="30deg"
+        auto-rotate-delay="2000"
+        rotation-per-second="20deg"
         camera-orbit="0deg 75deg 105%"
         field-of-view="45deg"
         min-camera-orbit="auto auto 50%"
         max-camera-orbit="auto auto 200%"
-        shadow-intensity="1"
+        shadow-intensity="0.8"
         exposure="1"
+        interpolation-decay="200"
+        interaction-prompt="none"
+        touch-action="pan-y"
         ar
         ar-modes="webxr scene-viewer quick-look"
         loading="lazy"
@@ -186,25 +184,29 @@
         <div class="loading-overlay" slot="poster">
           <div class="spinner"></div>
           <p>Loading Muscle Model...</p>
-          <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">Path: /models/cat-muscle.glb</p>
+          <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">Path: models/cat-muscle.glb</p>
         </div>
       </model-viewer>
 
       <model-viewer
         id="skeletonViewer"
         class="model-viewer"
-        src="/models/cat-skeleton.glb"
+        src="models/cat-skeleton.glb"
         alt="Cat Skeleton Anatomy"
         camera-controls
+        disable-tap
         auto-rotate
-        auto-rotate-delay="1000"
-        rotation-per-second="30deg"
+        auto-rotate-delay="2000"
+        rotation-per-second="20deg"
         camera-orbit="0deg 75deg 105%"
         field-of-view="45deg"
         min-camera-orbit="auto auto 50%"
         max-camera-orbit="auto auto 200%"
-        shadow-intensity="1"
+        shadow-intensity="0.8"
         exposure="1"
+        interpolation-decay="200"
+        interaction-prompt="none"
+        touch-action="pan-y"
         ar
         ar-modes="webxr scene-viewer quick-look"
         loading="lazy"
@@ -212,13 +214,59 @@
         <div class="loading-overlay" slot="poster">
           <div class="spinner"></div>
           <p>Loading Skeleton Model...</p>
-          <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">Path: /models/cat-skeleton.glb</p>
+          <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">Path: models/cat-skeleton.glb</p>
         </div>
       </model-viewer>
 
       <div class="controls-overlay" aria-label="View controls">
-        <button class="control-btn" id="resetView" title="Reset view" aria-label="Reset view">🔄</button>
-        <button class="control-btn" id="arButton" title="View in AR" aria-label="View in AR">📱</button>
+        <button class="control-btn" id="autoRotateToggle" title="Toggle auto-rotate" aria-label="Toggle auto-rotate">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+        </button>
+        <button class="control-btn" id="resetView" title="Reset view" aria-label="Reset view">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+            <path d="M21 3v5h-5"/>
+          </svg>
+        </button>
+        <button class="control-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+            <line x1="11" y1="8" x2="11" y2="14"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </button>
+        <button class="control-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </button>
+        <button class="control-btn" id="arButton" title="View in AR" aria-label="View in AR">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M16 3h5v5"/>
+            <path d="M21 3l-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="interaction-hints" id="interactionHints">
+        <div class="hint-item">
+          <div class="hint-icon">🖱️</div>
+          <div class="hint-text">Drag to rotate</div>
+        </div>
+        <div class="hint-item">
+          <div class="hint-icon">🔍</div>
+          <div class="hint-text">Scroll to zoom</div>
+        </div>
+        <div class="hint-item">
+          <div class="hint-icon">👆</div>
+          <div class="hint-text">Two fingers to pan</div>
+        </div>
       </div>
 
       <div class="instructions">
@@ -230,6 +278,7 @@
 
       <!-- Info Drawer -->
       <section class="info-drawer" id="infoDrawer" aria-live="polite">
+        <div class="drawer-handle"></div>
         <div class="drawer-header">
           <span class="drawer-icon" id="drawerIcon">🔍</span>
           <span class="drawer-title" id="drawerTitle">Part</span>
