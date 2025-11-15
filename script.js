@@ -2,16 +2,16 @@
 // Anatomy Data
 // ===============================
 const anatomyData = {
-  normal: {
+  Horse: {
     overview: {
-      title: "Normal Cat Anatomy",
+      title: "Horse Anatomy",
       category: "Complete Structure",
       icon: "🐱",
       description:
         "The complete feline anatomy showcasing the natural external appearance and internal structure. Cats are highly specialized carnivores with remarkable agility, acute senses, and efficient hunting adaptations.",
       details: [
-        { emoji: "🦴", label: "Skeleton", value: "244 bones providing flexibility and strength" },
-        { emoji: "💪", label: "Muscles", value: "Over 500 muscles enabling precise movement" },
+        { emoji: "🦴", label: "Horse", value: "244 bones providing flexibility and strength" },
+        { emoji: "💪", label: "Cows", value: "Over 500 muscles enabling precise movement" },
         { emoji: "❤️", label: "Organs", value: "Specialized digestive and circulatory systems" },
       ],
     },
@@ -83,9 +83,9 @@ const anatomyData = {
       details: [{ emoji: "📌", label: "Tip", value: "Map mesh mesh names to data keys for richer info." }],
     },
   },
-  muscle: {
+  Cow: {
     overview: {
-      title: "Cat Muscular System",
+      title: "Cow System",
       category: "Muscle Anatomy",
       icon: "💪",
       description:
@@ -162,13 +162,13 @@ const anatomyData = {
       details: [{ emoji: "📌", label: "Tip", value: "Map mesh names to data keys for richer info." }],
     },
   },
-  skeleton: {
+  Cat: {
     overview: {
-      title: "Cat Skeletal System",
+      title: "Cat System",
       category: "Bone Structure",
       icon: "🦴",
       description:
-        "The cat skeleton contains 244 bones (30 more than humans) with an exceptionally flexible spine and specialized joints. This structure enables their legendary agility and ability to always land on their feet.",
+        "The cat contains 244 bones (30 more than humans) with an exceptionally flexible spine and specialized joints. This structure enables their legendary agility and ability to always land on their feet.",
       details: [
         { emoji: "🔢", label: "Bones", value: "244 total bones including 53 vertebrae" },
         { emoji: "🔄", label: "Flexibility", value: "Loose vertebral connections allow 180° rotation" },
@@ -192,7 +192,7 @@ const anatomyData = {
       category: "Skeletal System",
       icon: "🦴",
       description:
-        "The thoracic skeleton consists of 13 pairs of ribs protecting vital organs while maintaining flexibility for the cat's agile movements.",
+        "The thoracic Cat consists of 13 pairs of ribs protecting vital organs while maintaining flexibility for the cat's agile movements.",
       details: [
         { emoji: "❤️", label: "Protection", value: "13 rib pairs form protective cage for organs" },
         { emoji: "🔗", label: "Sternum", value: "Flexible sternum allows chest expansion" },
@@ -216,7 +216,7 @@ const anatomyData = {
       category: "Skeletal System",
       icon: "🦴",
       description:
-        "The tail skeleton consists of 19-23 small vertebrae that decrease in size toward the tip, providing flexibility and balance.",
+        "The tail Cat consists of 19-23 small vertebrae that decrease in size toward the tip, providing flexibility and balance.",
       details: [
         { emoji: "🔢", label: "Count", value: "19-23 caudal vertebrae depending on breed" },
         { emoji: "🔄", label: "Flexibility", value: "Ball-and-socket joints between vertebrae" },
@@ -249,7 +249,7 @@ const anatomyData = {
     },
     unknown: {
       title: "Skeletal Part",
-      category: "Feline Skeleton",
+      category: "Feline Cat",
       icon: "🔍",
       description: "No detailed info available yet.",
       details: [{ emoji: "📌", label: "Tip", value: "Map mesh names to data keys for richer info." }],
@@ -260,7 +260,7 @@ const anatomyData = {
 // ===============================
 // State Management
 // ===============================
-let currentState = "normal"
+let currentState = "Horse"
 let viewers = {}
 let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 let touchStartY = 0
@@ -318,6 +318,37 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize Lottie Animation
   initLottieAnimation()
 
+  // Log window size for debugging
+  console.log(`[Init] Window size: ${window.innerWidth}x${window.innerHeight}`)
+  console.log(`[Init] Mobile detected: ${isMobile}`)
+  
+  const toggle = document.getElementById('mobileMenuToggle')
+  const style = toggle ? window.getComputedStyle(toggle) : null
+  console.log(`[Init] Toggle button display: ${style ? style.display : 'NOT FOUND'}, visibility: ${style ? style.visibility : 'N/A'}`)
+
+  // Auto-hide the on-screen instructions after 5 seconds
+  setTimeout(() => {
+    const instructions = document.querySelector('.instructions')
+    if (instructions) {
+      instructions.style.transition = 'opacity 0.4s ease'
+      instructions.style.opacity = '0'
+      setTimeout(() => {
+        instructions.style.display = 'none'
+      }, 450)
+      console.log('[Init] Instructions hidden after 5s')
+    }
+  }, 5000)
+setTimeout(() => {
+    const instructions = document.querySelector('.interaction-hints')
+    if (instructions) {
+      instructions.style.transition = 'opacity 0.4s ease'
+      instructions.style.opacity = '0'
+      setTimeout(() => {
+        instructions.style.display = 'none'
+      }, 450)
+      console.log('[Init] Instructions hidden after 5s')
+    }
+  }, 5000)
   startButton.addEventListener("click", () => {
     introScreen.classList.add("hidden")
     
@@ -341,72 +372,73 @@ document.addEventListener("DOMContentLoaded", () => {
 function initLottieAnimation() {
   const container = document.getElementById('lottieAnimation')
   
-  if (!container || typeof lottie === 'undefined') {
-    console.warn('[Lottie] Container or lottie library not found')
-    return
-  }
+  // if (!container || typeof lottie === 'undefined') {
+  //   console.warn('[Lottie] Container or lottie library not found')
+  //   return
+  // }
   
-  try {
-    // Load a beautiful cat animation from LottieFiles
-    // Using a popular cat animation - you can replace with any animal from lottiefiles.com
-    lottieAnimation = lottie.loadAnimation({
-      container: container,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      path: 'https://lottie.host/4c3c7f79-c0a1-4ab5-b8a1-d85b4b4de62f/qJP0LD6gEf.json' // Cute cat animation
-      // Alternative animals you can use:
-      // Dog: 'https://lottie.host/ccdb5e44-d103-4e1a-9f0f-6f8c8b3b08da/1iRYaHqGcR.json'
-      // Bird: 'https://lottie.host/7d8e0c36-7b5f-4d5b-9d5f-2c2e1f8e8e8e/jKcXF8XtF8.json'
-      // Deer: 'https://lottie.host/embed/b6223f6c-6cd6-4dba-9d4f-3c6d4f1f6f6f/6Kw8qw8qw8.json'
-    })
+  // try {
+  //   // Load a beautiful cat animation from LottieFiles
+  //   // Using a popular cat animation - you can replace with any animal from lottiefiles.com
+  //   lottieAnimation = lottie.loadAnimation({
+  //     container: container,
+  //     renderer: 'svg',
+  //     loop: true,
+  //     autoplay: true,
+  //     path: 'https://lottie.host/4c3c7f79-c0a1-4ab5-b8a1-d85b4b4de62f/qJP0LD6gEf.json' // Cute cat animation
+  //     // Alternative animals you can use:
+  //     // Dog: 'https://lottie.host/ccdb5e44-d103-4e1a-9f0f-6f8c8b3b08da/1iRYaHqGcR.json'
+  //     // Bird: 'https://lottie.host/7d8e0c36-7b5f-4d5b-9d5f-2c2e1f8e8e8e/jKcXF8XtF8.json'
+  //     // Deer: 'https://lottie.host/embed/b6223f6c-6cd6-4dba-9d4f-3c6d4f1f6f6f/6Kw8qw8qw8.json'
+  //   })
     
-    lottieAnimation.setSpeed(1)
+  //   lottieAnimation.setSpeed(1)
     
-    console.log('[Lottie] Animation loaded successfully')
+  //   console.log('[Lottie] Animation loaded successfully')
     
-    // Add interactive hover effects
-    const lottieContainer = document.getElementById('lottieContainer')
+  //   // Add interactive hover effects
+  //   const lottieContainer = document.getElementById('lottieContainer')
     
-    lottieContainer.addEventListener('mouseenter', () => {
-      lottieAnimation.setSpeed(1.5)
-      lottieContainer.classList.add('hovered')
-    })
+  //   lottieContainer.addEventListener('mouseenter', () => {
+  //     lottieAnimation.setSpeed(1.5)
+  //     lottieContainer.classList.add('hovered')
+  //   })
     
-    lottieContainer.addEventListener('mouseleave', () => {
-      lottieAnimation.setSpeed(1)
-      lottieContainer.classList.remove('hovered')
-    })
+  //   lottieContainer.addEventListener('mouseleave', () => {
+  //     lottieAnimation.setSpeed(1)
+  //     lottieContainer.classList.remove('hovered')
+  //   })
     
-    lottieContainer.addEventListener('click', () => {
-      // Play a quick burst effect on click
-      lottieAnimation.setSpeed(2)
-      lottieContainer.classList.add('clicked')
+  //   lottieContainer.addEventListener('click', () => {
+  //     // Play a quick burst effect on click
+  //     lottieAnimation.setSpeed(2)
+  //     lottieContainer.classList.add('clicked')
       
-      setTimeout(() => {
-        lottieAnimation.setSpeed(1)
-        lottieContainer.classList.remove('clicked')
-      }, 500)
-    })
+  //     setTimeout(() => {
+  //       lottieAnimation.setSpeed(1)
+  //       lottieContainer.classList.remove('clicked')
+  //     }, 500)
+  //   })
     
-  } catch (error) {
-    console.error('[Lottie] Error loading animation:', error)
-    // Fallback: show a simple message
+  // } catch (error) {
+  //   console.error('[Lottie] Error loading animation:', error)
+  //   // Fallback: show a simple message
+  //   container.innerHTML = '<div style="text-align: center; color: var(--primary);">🐱</div>'
+  // }
     container.innerHTML = '<div style="text-align: center; color: var(--primary);">🐱</div>'
-  }
 }
 
 // ===============================
 // Initialization
 // ===============================
 function init() {
-  console.log("[Enhanced] Initializing Cat Anatomy Explorer...")
+  console.log("[Enhanced] Initializing Animal Anatomy Explorer...")
 
   // Get model viewer elements
   viewers = {
-    normal: document.getElementById("normalViewer"),
-    muscle: document.getElementById("muscleViewer"),
-    skeleton: document.getElementById("skeletonViewer"),
+    Horse: document.getElementById("HorseViewer"),
+    Cow: document.getElementById("CowViewer"),
+    Cat: document.getElementById("CatViewer"),
   }
 
   console.log("[Enhanced] Model viewers found:", Object.keys(viewers))
@@ -436,9 +468,9 @@ function init() {
   })
 
   setupEventListeners()
-  setupMobileOptimizations()
   setupDrawerGestures()
   setupModelInteractions()
+  setupMenuToggle()
 
   // Show initial anatomy info
   showAnatomyInfo("overview")
@@ -450,7 +482,7 @@ function init() {
       hints.style.opacity = '0'
       setTimeout(() => hints.style.display = 'none', 500)
     }
-  }, 5000)
+  }, 3000)
 
   console.log("[Enhanced] Initialization complete. Current state:", currentState)
 }
@@ -475,12 +507,12 @@ function optimizeViewerPerformance(viewer) {
   const handleInteractionEnd = () => {
     clearTimeout(interactionTimer)
     
-    // Resume auto-rotate after 3 seconds of no interaction
+    // Resume auto-rotate after 2 seconds of no interaction
     interactionTimer = setTimeout(() => {
       if (isAutoRotating && viewer.classList.contains('active')) {
         viewer.autoRotate = true
       }
-    }, 3000)
+    }, 2000)
   }
   
   // Listen to camera change events
@@ -589,37 +621,6 @@ function setupModelInteractions() {
 }
 
 // ===============================
-// Mobile Optimizations
-// ===============================
-function setupMobileOptimizations() {
-  if (!isMobile) return
-
-  // Mobile menu toggle
-  const mobileMenuToggle = document.getElementById('mobileMenuToggle')
-  const sidebar = document.getElementById('sidebar')
-  
-  mobileMenuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('open')
-    mobileMenuToggle.classList.toggle('active')
-  })
-
-  // Close sidebar when clicking outside on mobile
-  document.addEventListener('click', (e) => {
-    if (isMobile && sidebar.classList.contains('open')) {
-      if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
-        sidebar.classList.remove('open')
-        mobileMenuToggle.classList.remove('active')
-      }
-    }
-  })
-
-  // Optimize touch interactions
-  Object.values(viewers).forEach(viewer => {
-    viewer.setAttribute('touch-action', 'pan-y')
-  })
-}
-
-// ===============================
 // Drawer Gesture Support
 // ===============================
 function setupDrawerGestures() {
@@ -683,7 +684,7 @@ function setupEventListeners() {
   // Theme toggle
   document.getElementById("themeToggle").addEventListener("click", toggleTheme)
 
-  // State toggle (Normal/Muscle/Skeleton) with smooth transitions
+  // State toggle (Horse/Cow/Cat) with smooth transitions
   document.querySelectorAll(".state-card").forEach((card) => {
     card.addEventListener("click", () => {
       switchState(card.dataset.state)
@@ -691,9 +692,9 @@ function setupEventListeners() {
       // Close mobile menu after selection
       if (isMobile) {
         const sidebar = document.getElementById('sidebar')
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle')
-        sidebar.classList.remove('open')
-        mobileMenuToggle.classList.remove('active')
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle') || document.getElementById('menuToggle')
+        if (sidebar) sidebar.classList.remove('open')
+        if (mobileMenuToggle && mobileMenuToggle.classList) mobileMenuToggle.classList.remove('active')
       }
     })
   })
@@ -724,13 +725,13 @@ function setupEventListeners() {
 function handleKeyboardShortcuts(e) {
   switch(e.key) {
     case '1':
-      switchState('normal')
+      switchState('Horse')
       break
     case '2':
-      switchState('muscle')
+      switchState('Cow')
       break
     case '3':
-      switchState('skeleton')
+      switchState('Cat')
       break
     case 'r':
     case 'R':
@@ -792,7 +793,7 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 // ===============================
-// State Switching (Normal/Muscle/Skeleton)
+// State Switching (Horse/Cow/Cat)
 // ===============================
 function switchState(state) {
   if (state === currentState) return
@@ -882,9 +883,11 @@ function closeDrawer() {
 }
 
 function switchTab(tabName) {
-  // Update tab buttons
+  // Update tab buttons with proper ARIA attributes
   document.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.tab === tabName)
+    const isActive = btn.dataset.tab === tabName
+    btn.classList.toggle("active", isActive)
+    btn.setAttribute("aria-selected", isActive)
   })
 
   // Show corresponding content with fade
@@ -1013,4 +1016,114 @@ function showNotification(message) {
     notification.classList.remove('show')
     setTimeout(() => notification.remove(), 300)
   }, 3000)
+}
+
+// ===============================
+// Mobile Menu Toggle
+// ===============================
+function setupMenuToggle() {
+  console.log('[MenuToggle] Setting up menu toggle...')
+  
+  const menuToggle = document.getElementById('mobileMenuToggle')
+  const sidebar = document.getElementById('sidebar')
+  const sidebarOverlay = document.getElementById('sidebarOverlay')
+  const sidebarClose = document.getElementById('sidebarClose')
+
+  console.log('[MenuToggle] Elements found:', {
+    menuToggle: !!menuToggle,
+    sidebar: !!sidebar,
+    sidebarOverlay: !!sidebarOverlay,
+    sidebarClose: !!sidebarClose
+  })
+
+  if (!menuToggle || !sidebar) {
+    console.error('[MenuToggle] CRITICAL: Button or sidebar not found!')
+    console.error('[MenuToggle] menuToggle:', menuToggle)
+    console.error('[MenuToggle] sidebar:', sidebar)
+    return
+  }
+
+  // Function to open menu
+  const openMenu = () => {
+    console.log('[MenuToggle] Opening menu...')
+    sidebar.classList.add('open')
+    menuToggle.classList.add('active')
+    if (sidebarOverlay) sidebarOverlay.classList.add('active')
+    document.body.style.overflow = 'hidden'
+    console.log('[MenuToggle] Menu opened successfully')
+  }
+
+  // Function to close menu
+  const closeMenu = () => {
+    console.log('[MenuToggle] Closing menu...')
+    sidebar.classList.remove('open')
+    menuToggle.classList.remove('active')
+    if (sidebarOverlay) sidebarOverlay.classList.remove('active')
+    document.body.style.overflow = ''
+    console.log('[MenuToggle] Menu closed successfully')
+  }
+
+  // Toggle menu on button click
+  menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation()
+    console.log('[MenuToggle] Button clicked!')
+    console.log('[MenuToggle] Sidebar currently open:', sidebar.classList.contains('open'))
+    
+    if (sidebar.classList.contains('open')) {
+      closeMenu()
+    } else {
+      openMenu()
+    }
+  })
+
+  // Close button in sidebar
+  if (sidebarClose) {
+    sidebarClose.addEventListener('click', (e) => {
+      e.stopPropagation()
+      console.log('[MenuToggle] Close button clicked')
+      closeMenu()
+    })
+  }
+
+  // Close menu when clicking overlay
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', () => {
+      console.log('[MenuToggle] Overlay clicked')
+      closeMenu()
+    })
+  }
+
+  // Close menu with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+      console.log('[MenuToggle] Escape key pressed')
+      closeMenu()
+    }
+  })
+
+  // Close menu when clicking outside on desktop
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 1024) {
+      if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+        if (sidebar.classList.contains('open')) {
+          console.log('[MenuToggle] Clicked outside, closing menu')
+          closeMenu()
+        }
+      }
+    }
+  })
+
+  // Close menu when switching views on mobile
+  document.querySelectorAll('.state-card').forEach(card => {
+    card.addEventListener('click', () => {
+      if (window.innerWidth <= 1024 && sidebar.classList.contains('open')) {
+        console.log('[MenuToggle] State card clicked, closing menu after delay')
+        setTimeout(() => {
+          closeMenu()
+        }, 300)
+      }
+    })
+  })
+
+  console.log('[MenuToggle] Setup complete!')
 }
