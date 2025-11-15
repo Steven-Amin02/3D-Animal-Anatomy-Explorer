@@ -263,11 +263,7 @@ const anatomyData = {
 let currentState = "Horse"
 let viewers = {}
 let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-let touchStartY = 0
-let drawerStartPos = 0
 let isAutoRotating = true
-let userInteractionTimeout = null
-let lastInteractionTime = 0
 
 // Prevent double-click zoom behavior
 document.addEventListener('dblclick', (e) => {
@@ -278,10 +274,9 @@ document.addEventListener('dblclick', (e) => {
 // Performance Monitoring
 // ===============================
 let loadProgress = 0
-const totalModels = 3
 let modelsLoaded = 0
 
-function updateLoadProgress(increment = 33) {
+function updateLoadProgress(increment = 50) {
   loadProgress += increment
   const perfProgress = document.getElementById('perfProgress')
   if (perfProgress) {
@@ -289,9 +284,9 @@ function updateLoadProgress(increment = 33) {
   }
   
   modelsLoaded++
-  console.log(`[Performance] Models loaded: ${modelsLoaded}/${totalModels}`)
   
-  if (modelsLoaded >= totalModels) {
+  // Hide progress hint after first model loads
+  if (modelsLoaded >= 1) {
     setTimeout(() => {
       const perfHint = document.getElementById('perfHint')
       if (perfHint) {
@@ -300,140 +295,60 @@ function updateLoadProgress(increment = 33) {
         setTimeout(() => {
           perfHint.style.display = 'none'
           perfHint.remove()
-        }, 500)
+        }, 300)
       }
-    }, 800)
+    }, 500)
   }
 }
 
 // ===============================
 // Intro Screen Handler
 // ===============================
-let lottieAnimation = null
-
 document.addEventListener("DOMContentLoaded", () => {
   const introScreen = document.getElementById("introScreen")
   const startButton = document.getElementById("startButton")
-  
-  // Initialize Lottie Animation
-  initLottieAnimation()
 
-  // Log window size for debugging
-  console.log(`[Init] Window size: ${window.innerWidth}x${window.innerHeight}`)
-  console.log(`[Init] Mobile detected: ${isMobile}`)
-  
-  const toggle = document.getElementById('mobileMenuToggle')
-  const style = toggle ? window.getComputedStyle(toggle) : null
-  console.log(`[Init] Toggle button display: ${style ? style.display : 'NOT FOUND'}, visibility: ${style ? style.visibility : 'N/A'}`)
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode')
+    const themeToggle = document.getElementById("themeToggle")
+    if (themeToggle) {
+      themeToggle.textContent = "☀️"
+    }
+  }
 
-  // Auto-hide the on-screen instructions after 5 seconds
+  // Auto-hide the on-screen instructions after 3 seconds
   setTimeout(() => {
     const instructions = document.querySelector('.instructions')
+    const hints = document.querySelector('.interaction-hints')
+    
     if (instructions) {
-      instructions.style.transition = 'opacity 0.4s ease'
       instructions.style.opacity = '0'
-      setTimeout(() => {
-        instructions.style.display = 'none'
-      }, 450)
-      console.log('[Init] Instructions hidden after 5s')
+      setTimeout(() => instructions.style.display = 'none', 300)
     }
-  }, 5000)
-setTimeout(() => {
-    const instructions = document.querySelector('.interaction-hints')
-    if (instructions) {
-      instructions.style.transition = 'opacity 0.4s ease'
-      instructions.style.opacity = '0'
-      setTimeout(() => {
-        instructions.style.display = 'none'
-      }, 450)
-      console.log('[Init] Instructions hidden after 5s')
+    
+    if (hints) {
+      hints.style.opacity = '0'
+      setTimeout(() => hints.style.display = 'none', 300)
     }
-  }, 5000)
+  }, 3000)
+  
   startButton.addEventListener("click", () => {
     introScreen.classList.add("hidden")
-    
-    // Stop and cleanup Lottie animation
-    if (lottieAnimation) {
-      lottieAnimation.stop()
-    }
-    
     setTimeout(() => {
       introScreen.remove()
-    }, 800)
+    }, 400)
   })
 
   // Initialize after intro
-  setTimeout(init, 100)
+  init()
 })
-
-// ===============================
-// Lottie Animation Setup
-// ===============================
-function initLottieAnimation() {
-  const container = document.getElementById('lottieAnimation')
-  
-  // if (!container || typeof lottie === 'undefined') {
-  //   console.warn('[Lottie] Container or lottie library not found')
-  //   return
-  // }
-  
-  // try {
-  //   // Load a beautiful cat animation from LottieFiles
-  //   // Using a popular cat animation - you can replace with any animal from lottiefiles.com
-  //   lottieAnimation = lottie.loadAnimation({
-  //     container: container,
-  //     renderer: 'svg',
-  //     loop: true,
-  //     autoplay: true,
-  //     path: 'https://lottie.host/4c3c7f79-c0a1-4ab5-b8a1-d85b4b4de62f/qJP0LD6gEf.json' // Cute cat animation
-  //     // Alternative animals you can use:
-  //     // Dog: 'https://lottie.host/ccdb5e44-d103-4e1a-9f0f-6f8c8b3b08da/1iRYaHqGcR.json'
-  //     // Bird: 'https://lottie.host/7d8e0c36-7b5f-4d5b-9d5f-2c2e1f8e8e8e/jKcXF8XtF8.json'
-  //     // Deer: 'https://lottie.host/embed/b6223f6c-6cd6-4dba-9d4f-3c6d4f1f6f6f/6Kw8qw8qw8.json'
-  //   })
-    
-  //   lottieAnimation.setSpeed(1)
-    
-  //   console.log('[Lottie] Animation loaded successfully')
-    
-  //   // Add interactive hover effects
-  //   const lottieContainer = document.getElementById('lottieContainer')
-    
-  //   lottieContainer.addEventListener('mouseenter', () => {
-  //     lottieAnimation.setSpeed(1.5)
-  //     lottieContainer.classList.add('hovered')
-  //   })
-    
-  //   lottieContainer.addEventListener('mouseleave', () => {
-  //     lottieAnimation.setSpeed(1)
-  //     lottieContainer.classList.remove('hovered')
-  //   })
-    
-  //   lottieContainer.addEventListener('click', () => {
-  //     // Play a quick burst effect on click
-  //     lottieAnimation.setSpeed(2)
-  //     lottieContainer.classList.add('clicked')
-      
-  //     setTimeout(() => {
-  //       lottieAnimation.setSpeed(1)
-  //       lottieContainer.classList.remove('clicked')
-  //     }, 500)
-  //   })
-    
-  // } catch (error) {
-  //   console.error('[Lottie] Error loading animation:', error)
-  //   // Fallback: show a simple message
-  //   container.innerHTML = '<div style="text-align: center; color: var(--primary);">🐱</div>'
-  // }
-    container.innerHTML = '<div style="text-align: center; color: var(--primary);">🐱</div>'
-}
 
 // ===============================
 // Initialization
 // ===============================
 function init() {
-  console.log("[Enhanced] Initializing Animal Anatomy Explorer...")
-
   // Get model viewer elements
   viewers = {
     Horse: document.getElementById("HorseViewer"),
@@ -441,64 +356,51 @@ function init() {
     Cat: document.getElementById("CatViewer"),
   }
 
-  console.log("[Enhanced] Model viewers found:", Object.keys(viewers))
-
   // Setup model viewer event listeners with performance tracking
   Object.entries(viewers).forEach(([key, viewer]) => {
     if (!viewer) {
-      console.error(`[Enhanced] Model viewer for ${key} not found!`)
+      console.error(`Model viewer for ${key} not found!`)
       return
     }
 
     viewer.addEventListener("load", () => {
-      console.log(`[Enhanced] ${key} model loaded successfully`)
       updateLoadProgress()
       optimizeViewerPerformance(viewer)
     })
 
     viewer.addEventListener("error", (event) => {
-      console.error(`[Enhanced] Error loading ${key} model:`, event)
+      console.error(`Error loading ${key} model:`, event)
       showModelError(key)
-    })
-
-    viewer.addEventListener("progress", (event) => {
-      const progress = event.detail.totalProgress * 100
-      console.log(`[Enhanced] ${key} model loading: ${progress.toFixed(0)}%`)
     })
   })
 
   setupEventListeners()
   setupDrawerGestures()
   setupModelInteractions()
-  setupMenuToggle()
+  setupModelMenu()
 
   // Show initial anatomy info
   showAnatomyInfo("overview")
 
-  // Hide interaction hints after 5 seconds
+  // Hide interaction hints after 3 seconds
   setTimeout(() => {
     const hints = document.getElementById('interactionHints')
     if (hints) {
       hints.style.opacity = '0'
-      setTimeout(() => hints.style.display = 'none', 500)
+      setTimeout(() => hints.style.display = 'none', 300)
     }
   }, 3000)
-
-  console.log("[Enhanced] Initialization complete. Current state:", currentState)
 }
 
 // ===============================
 // Performance Optimizations
 // ===============================
 function optimizeViewerPerformance(viewer) {
-  // Enhanced interaction handling - pause rotation on user interaction
+  // Simplified interaction handling
   let interactionTimer = null
   
   const handleInteractionStart = () => {
-    lastInteractionTime = Date.now()
     clearTimeout(interactionTimer)
-    
-    // Pause auto-rotate immediately when user starts interacting
     if (isAutoRotating) {
       viewer.autoRotate = false
     }
@@ -506,8 +408,6 @@ function optimizeViewerPerformance(viewer) {
   
   const handleInteractionEnd = () => {
     clearTimeout(interactionTimer)
-    
-    // Resume auto-rotate after 2 seconds of no interaction
     interactionTimer = setTimeout(() => {
       if (isAutoRotating && viewer.classList.contains('active')) {
         viewer.autoRotate = true
@@ -515,25 +415,17 @@ function optimizeViewerPerformance(viewer) {
     }, 2000)
   }
   
-  // Listen to camera change events
   viewer.addEventListener('camera-change', handleInteractionStart)
-  
-  // Mouse/touch interaction events
   viewer.addEventListener('mousedown', handleInteractionStart)
-  viewer.addEventListener('touchstart', handleInteractionStart)
-  viewer.addEventListener('wheel', handleInteractionStart)
-  
+  viewer.addEventListener('touchstart', handleInteractionStart, { passive: true })
+  viewer.addEventListener('wheel', handleInteractionStart, { passive: true })
   viewer.addEventListener('mouseup', handleInteractionEnd)
-  viewer.addEventListener('touchend', handleInteractionEnd)
+  viewer.addEventListener('touchend', handleInteractionEnd, { passive: true })
   
-  // Prevent double-click behavior on model viewer
   viewer.addEventListener('dblclick', (e) => {
     e.preventDefault()
-    e.stopPropagation()
-    return false
   }, { passive: false })
   
-  // Prevent context menu for better interaction
   viewer.addEventListener('contextmenu', (e) => {
     e.preventDefault()
   })
@@ -569,111 +461,25 @@ function setupModelInteractions() {
   Object.entries(viewers).forEach(([key, viewer]) => {
     if (!viewer) return
     
-    // Smooth camera transitions
-    viewer.interpolationDecay = 200
-    
-    // Enhanced touch support
-    let touchStartTime = 0
-    let touchCount = 0
-    
-    viewer.addEventListener('touchstart', (e) => {
-      touchStartTime = Date.now()
-      touchCount = e.touches.length
-    })
-    
-    viewer.addEventListener('touchend', (e) => {
-      const touchDuration = Date.now() - touchStartTime
-      
-      // Single tap (not double tap) - show info
-      if (touchCount === 1 && touchDuration < 200) {
-        setTimeout(() => {
-          if (Date.now() - touchStartTime > 250) {
-            showAnatomyInfo('overview')
-          }
-        }, 250)
-      }
-    })
-    
-    // Mouse interactions
-    let clickCount = 0
-    let clickTimer = null
-    
-    viewer.addEventListener('click', (e) => {
-      clickCount++
-      
-      if (clickCount === 1) {
-        clickTimer = setTimeout(() => {
-          // Single click - show info
-          if (clickCount === 1) {
-            showAnatomyInfo('overview')
-          }
-          clickCount = 0
-        }, 250)
-      } else if (clickCount === 2) {
-        // Double click - do nothing (prevent unwanted behavior)
-        clearTimeout(clickTimer)
-        clickCount = 0
-        e.preventDefault()
-        e.stopPropagation()
-      }
+    // Simplified click handler
+    viewer.addEventListener('click', () => {
+      showAnatomyInfo('overview')
     })
   })
 }
 
 // ===============================
-// Drawer Gesture Support
+// Drawer Gesture Support (Simplified)
 // ===============================
 function setupDrawerGestures() {
   const drawer = document.getElementById('infoDrawer')
-  const drawerHandle = drawer.querySelector('.drawer-handle')
+  if (!drawer) return
   
+  const drawerHandle = drawer.querySelector('.drawer-handle')
   if (!drawerHandle) {
-    // Create handle if not exists
     const handle = document.createElement('div')
     handle.className = 'drawer-handle'
     drawer.insertBefore(handle, drawer.firstChild)
-  }
-
-  // Touch/drag support for drawer
-  drawer.addEventListener('touchstart', handleDrawerTouchStart, { passive: true })
-  drawer.addEventListener('touchmove', handleDrawerTouchMove, { passive: false })
-  drawer.addEventListener('touchend', handleDrawerTouchEnd, { passive: true })
-}
-
-function handleDrawerTouchStart(e) {
-  const drawer = document.getElementById('infoDrawer')
-  if (e.target.closest('.drawer-handle') || e.target.closest('.drawer-header')) {
-    touchStartY = e.touches[0].clientY
-    const transform = window.getComputedStyle(drawer).transform
-    drawerStartPos = transform !== 'none' ? parseFloat(transform.split(',')[5]) : 0
-  }
-}
-
-function handleDrawerTouchMove(e) {
-  const drawer = document.getElementById('infoDrawer')
-  if (touchStartY > 0) {
-    const deltaY = e.touches[0].clientY - touchStartY
-    if (deltaY > 0) { // Only allow downward drag
-      e.preventDefault()
-      drawer.style.transform = `translateY(${Math.min(deltaY, 200)}px)`
-    }
-  }
-}
-
-function handleDrawerTouchEnd(e) {
-  const drawer = document.getElementById('infoDrawer')
-  if (touchStartY > 0) {
-    const deltaY = e.changedTouches[0].clientY - touchStartY
-    
-    if (deltaY > 100) { // Close drawer if dragged down significantly
-      closeDrawer()
-    } else {
-      // Snap back to open position
-      drawer.style.transform = 'translateY(0)'
-    }
-    
-    touchStartY = 0
-    drawerStartPos = 0
   }
 }
 
@@ -684,18 +490,12 @@ function setupEventListeners() {
   // Theme toggle
   document.getElementById("themeToggle").addEventListener("click", toggleTheme)
 
-  // State toggle (Horse/Cow/Cat) with smooth transitions
-  document.querySelectorAll(".state-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      switchState(card.dataset.state)
-      
-      // Close mobile menu after selection
-      if (isMobile) {
-        const sidebar = document.getElementById('sidebar')
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle') || document.getElementById('menuToggle')
-        if (sidebar) sidebar.classList.remove('open')
-        if (mobileMenuToggle && mobileMenuToggle.classList) mobileMenuToggle.classList.remove('active')
-      }
+  // Model menu items
+  document.querySelectorAll(".menu-item").forEach((item) => {
+    item.addEventListener("click", () => {
+      const model = item.dataset.model
+      switchState(model)
+      closeModelMenu()
     })
   })
 
@@ -773,24 +573,11 @@ function toggleTheme() {
   // Update model viewer environment
   Object.values(viewers).forEach((viewer) => {
     if (viewer) {
-      viewer.environmentImage = isDark ? "neutral" : "neutral"
+      viewer.environmentImage = "neutral"
     }
   })
-  
-  console.log(`[Theme] Switched to ${isDark ? 'dark' : 'light'} mode`)
 }
 
-// Load saved theme
-window.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('theme')
-  if (savedTheme === 'dark') {
-    document.body.classList.add('dark-mode')
-    const themeToggle = document.getElementById("themeToggle")
-    if (themeToggle) {
-      themeToggle.textContent = "☀️"
-    }
-  }
-})
 
 // ===============================
 // State Switching (Horse/Cow/Cat)
@@ -798,28 +585,28 @@ window.addEventListener('DOMContentLoaded', () => {
 function switchState(state) {
   if (state === currentState) return
 
-  console.log(`[Enhanced] Switching state from ${currentState} to ${state}`)
-
   currentState = state
 
-  // Update card states with animation
-  document.querySelectorAll(".state-card").forEach((card) => {
-    const isActive = card.dataset.state === state
-    card.setAttribute("aria-selected", isActive)
-    
-    // Update badge text
-    const badge = card.querySelector('.state-card-badge')
-    if (badge) {
-      badge.textContent = isActive ? 'Active' : 'View'
-    }
+  // Update menu item states
+  document.querySelectorAll(".menu-item").forEach((item) => {
+    const isActive = item.dataset.model === state
+    item.classList.toggle('active', isActive)
   })
 
-  // Switch model viewers with fade effect
+  // Switch model viewers with fade effect and lazy load
   Object.entries(viewers).forEach(([key, viewer]) => {
     const isActive = key === state
     
     if (isActive) {
       viewer.classList.add("active")
+      // Lazy load model if not already loaded
+      if (!viewer.src && viewer.id === "HorseViewer") {
+        viewer.src = "models/Horse.glb"
+      } else if (!viewer.src && viewer.id === "CowViewer") {
+        viewer.src = "models/Cow.glb"
+      } else if (!viewer.src && viewer.id === "CatViewer") {
+        viewer.src = "models/Cat.glb"
+      }
       // Resume auto-rotate for active viewer only if enabled
       if (isAutoRotating) {
         viewer.autoRotate = true
@@ -878,8 +665,6 @@ function closeDrawer() {
   const drawer = document.getElementById("infoDrawer")
   drawer.classList.remove("open")
   drawer.style.transform = 'translateY(100%)'
-  
-  console.log('[Drawer] Closed drawer')
 }
 
 function switchTab(tabName) {
@@ -934,8 +719,6 @@ function zoomIn() {
     
     activeViewer.cameraOrbit = `${currentOrbit.theta}rad ${currentOrbit.phi}rad ${newRadius}m`
     
-    console.log(`[Zoom] Zooming in - New radius: ${newRadius}m`)
-    
     // Haptic feedback
     if (isMobile && navigator.vibrate) {
       navigator.vibrate(5)
@@ -952,8 +735,6 @@ function zoomOut() {
     
     activeViewer.cameraOrbit = `${currentOrbit.theta}rad ${currentOrbit.phi}rad ${newRadius}m`
     
-    console.log(`[Zoom] Zooming out - New radius: ${newRadius}m`)
-    
     // Haptic feedback
     if (isMobile && navigator.vibrate) {
       navigator.vibrate(5)
@@ -963,7 +744,6 @@ function zoomOut() {
 
 function resetView() {
   const activeViewer = viewers[currentState]
-  console.log(`[Enhanced] Resetting view for ${currentState} viewer`)
 
   if (activeViewer) {
     activeViewer.resetTurntableRotation()
@@ -975,28 +755,21 @@ function resetView() {
       activeViewer.autoRotate = true
     }
     
-    console.log("[Enhanced] View reset complete")
-    
     // Haptic feedback
     if (isMobile && navigator.vibrate) {
       navigator.vibrate(10)
     }
     
     showNotification('View reset to default')
-  } else {
-    console.error("[Enhanced] No active viewer found for reset")
   }
 }
 
 function activateAR() {
   const activeViewer = viewers[currentState]
-  console.log(`[Enhanced] Attempting to activate AR for ${currentState} viewer`)
 
   if (activeViewer && activeViewer.canActivateAR) {
     activeViewer.activateAR()
-    console.log("[Enhanced] AR activated")
   } else {
-    console.warn("[Enhanced] AR not available on this device/browser")
     showNotification("AR is not available on this device or browser.")
   }
 }
@@ -1019,111 +792,67 @@ function showNotification(message) {
 }
 
 // ===============================
-// Mobile Menu Toggle
+// Model Menu Functions
 // ===============================
-function setupMenuToggle() {
-  console.log('[MenuToggle] Setting up menu toggle...')
+function openModelMenu() {
+  const panel = document.getElementById('menuPanel')
+  const overlay = document.getElementById('menuOverlay')
+  const btn = document.getElementById('menuToggleBtn')
   
-  const menuToggle = document.getElementById('mobileMenuToggle')
-  const sidebar = document.getElementById('sidebar')
-  const sidebarOverlay = document.getElementById('sidebarOverlay')
-  const sidebarClose = document.getElementById('sidebarClose')
+  if (panel) panel.classList.add('open')
+  if (overlay) overlay.classList.add('active')
+  if (btn) btn.classList.add('active')
+  document.body.style.overflow = 'hidden'
+}
 
-  console.log('[MenuToggle] Elements found:', {
-    menuToggle: !!menuToggle,
-    sidebar: !!sidebar,
-    sidebarOverlay: !!sidebarOverlay,
-    sidebarClose: !!sidebarClose
-  })
+function closeModelMenu() {
+  const panel = document.getElementById('menuPanel')
+  const overlay = document.getElementById('menuOverlay')
+  const btn = document.getElementById('menuToggleBtn')
+  
+  if (panel) panel.classList.remove('open')
+  if (overlay) overlay.classList.remove('active')
+  if (btn) btn.classList.remove('active')
+  document.body.style.overflow = ''
+}
 
-  if (!menuToggle || !sidebar) {
-    console.error('[MenuToggle] CRITICAL: Button or sidebar not found!')
-    console.error('[MenuToggle] menuToggle:', menuToggle)
-    console.error('[MenuToggle] sidebar:', sidebar)
-    return
-  }
-
-  // Function to open menu
-  const openMenu = () => {
-    console.log('[MenuToggle] Opening menu...')
-    sidebar.classList.add('open')
-    menuToggle.classList.add('active')
-    if (sidebarOverlay) sidebarOverlay.classList.add('active')
-    document.body.style.overflow = 'hidden'
-    console.log('[MenuToggle] Menu opened successfully')
-  }
-
-  // Function to close menu
-  const closeMenu = () => {
-    console.log('[MenuToggle] Closing menu...')
-    sidebar.classList.remove('open')
-    menuToggle.classList.remove('active')
-    if (sidebarOverlay) sidebarOverlay.classList.remove('active')
-    document.body.style.overflow = ''
-    console.log('[MenuToggle] Menu closed successfully')
-  }
-
-  // Toggle menu on button click
-  menuToggle.addEventListener('click', (e) => {
+function setupModelMenu() {
+  const toggleBtn = document.getElementById('menuToggleBtn')
+  const closeBtn = document.getElementById('menuClose')
+  const overlay = document.getElementById('menuOverlay')
+  const panel = document.getElementById('menuPanel')
+  
+  if (!toggleBtn || !panel) return
+  
+  // Toggle button
+  toggleBtn.addEventListener('click', (e) => {
     e.stopPropagation()
-    console.log('[MenuToggle] Button clicked!')
-    console.log('[MenuToggle] Sidebar currently open:', sidebar.classList.contains('open'))
-    
-    if (sidebar.classList.contains('open')) {
-      closeMenu()
+    if (panel.classList.contains('open')) {
+      closeModelMenu()
     } else {
-      openMenu()
+      openModelMenu()
     }
   })
-
-  // Close button in sidebar
-  if (sidebarClose) {
-    sidebarClose.addEventListener('click', (e) => {
+  
+  // Close button
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
       e.stopPropagation()
-      console.log('[MenuToggle] Close button clicked')
-      closeMenu()
+      closeModelMenu()
     })
   }
-
-  // Close menu when clicking overlay
-  if (sidebarOverlay) {
-    sidebarOverlay.addEventListener('click', () => {
-      console.log('[MenuToggle] Overlay clicked')
-      closeMenu()
+  
+  // Overlay click
+  if (overlay) {
+    overlay.addEventListener('click', () => {
+      closeModelMenu()
     })
   }
-
-  // Close menu with Escape key
+  
+  // Escape key
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && sidebar.classList.contains('open')) {
-      console.log('[MenuToggle] Escape key pressed')
-      closeMenu()
+    if (e.key === 'Escape' && panel.classList.contains('open')) {
+      closeModelMenu()
     }
   })
-
-  // Close menu when clicking outside on desktop
-  document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 1024) {
-      if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-        if (sidebar.classList.contains('open')) {
-          console.log('[MenuToggle] Clicked outside, closing menu')
-          closeMenu()
-        }
-      }
-    }
-  })
-
-  // Close menu when switching views on mobile
-  document.querySelectorAll('.state-card').forEach(card => {
-    card.addEventListener('click', () => {
-      if (window.innerWidth <= 1024 && sidebar.classList.contains('open')) {
-        console.log('[MenuToggle] State card clicked, closing menu after delay')
-        setTimeout(() => {
-          closeMenu()
-        }, 300)
-      }
-    })
-  })
-
-  console.log('[MenuToggle] Setup complete!')
 }

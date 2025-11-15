@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover"/>
   <title>3D Animals Anatomy Explorer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
@@ -23,12 +22,6 @@
   <!-- Added intro screen overlay -->
   <div class="intro-screen" id="introScreen">
     <div class="intro-content">
-      <!-- Lottie Animation Container -->
-      <div class="lottie-container" id="lottieContainer">
-        <div id="lottieAnimation" class="lottie-animation"></div>
-        <div class="lottie-glow"></div>
-      </div>
-
       <!-- Text content -->
       <h1 class="intro-title">Animals Anatomy Explorer</h1>
       <p class="intro-tagline">Interactive 3D Visualization Platform</p>
@@ -42,83 +35,48 @@
         <span class="button-arrow">→</span>
       </button>
 
-      <!-- Loading indicator -->
-      <div class="intro-loading">
-        <div class="loading-dots">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <p>Preparing 3D environment...</p>
-      </div>
     </div>
   </div>
 
   <div class="container">
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
-      <span class="hamburger"></span>
-    </button>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar" aria-label="Sidebar">
-      <div >Cat Anatomy Explorer</div>
-
-      <section class="section">
-        <div class="section-title">Visualization mode</div>
-        <!-- Transformed simple buttons into rich interactive cards -->
-        <div class="state-toggle" role="tablist">
-          <div class="state-card" data-state="Horse" role="tab" aria-selected="true">
-            <div class="state-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-                <circle cx="8.5" cy="10.5" r="1.5"/>
-                <circle cx="15.5" cy="10.5" r="1.5"/>
-                <path d="M8 15c1 1 2.5 1.5 4 1.5s3-.5 4-1.5"/>
-              </svg>
-            </div>
-            <div class="state-card-content">
-              <div class="state-card-title">Horse</div>
-              <div class="state-card-subtitle">Complete anatomy view</div>
-            </div>
-            <div class="state-card-badge">Active</div>
-          </div>
-
-          <div class="state-card" data-state="Cow" role="tab" aria-selected="false">
-            <div class="state-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <path d="M12 18v-6"/>
-                <path d="M9 15l3-3 3 3"/>
-              </svg>
-            </div>
-            <div class="state-card-content">
-              <div class="state-card-title">Cow</div>
-              <div class="state-card-subtitle">Full Cow Body</div>
-            </div>
-            <div class="state-card-badge">View</div>
-          </div>
-
-          <div class="state-card" data-state="Cat" role="tab" aria-selected="false">
-            <div class="state-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <path d="M9 3v18"/>
-                <path d="M15 3v18"/>
-                <path d="M3 9h18"/>
-                <path d="M3 15h18"/>
-              </svg>
-            </div>
-            <div class="state-card-content">
-              <div class="state-card-title">Cat</div>
-              <div class="state-card-subtitle">Full Cat Body</div>
-            </div>
-            <div class="state-card-badge">View</div>
-          </div>
+    <!-- Model Selection Menu -->
+    <nav class="model-menu" id="modelMenu">
+      <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="Toggle model menu">
+        <span class="menu-icon">☰</span>
+        <span class="menu-text">Models</span>
+      </button>
+      
+      <div class="menu-panel" id="menuPanel">
+        <div class="menu-header">
+          <h3>Select Model</h3>
+          <button class="menu-close" id="menuClose" aria-label="Close menu">×</button>
         </div>
-      </section>
-    </aside>
+        <div class="menu-items">
+          <button class="menu-item active" data-model="Horse">
+            <span class="menu-item-icon">🐴</span>
+            <span class="menu-item-text">
+              <strong>Horse</strong>
+              <small>Complete anatomy view</small>
+            </span>
+          </button>
+          <button class="menu-item" data-model="Cow">
+            <span class="menu-item-icon">🐄</span>
+            <span class="menu-item-text">
+              <strong>Cow</strong>
+              <small>Full Cow Body</small>
+            </span>
+          </button>
+          <button class="menu-item" data-model="Cat">
+            <span class="menu-item-icon">🐱</span>
+            <span class="menu-item-text">
+              <strong>Cat</strong>
+              <small>Full Cat Body</small>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div class="menu-overlay" id="menuOverlay"></div>
+    </nav>
 
     <!-- 3D Canvas Area -->
     <main class="canvas-area" aria-label="3D model viewer area">
@@ -160,7 +118,6 @@
       <model-viewer
         id="CowViewer"
         class="model-viewer"
-        src="models/Cow.glb"
         alt="Cow Anatomy"
         camera-controls
         disable-tap
@@ -190,7 +147,6 @@
       <model-viewer
         id="CatViewer"
         class="model-viewer"
-        src="models/Cat.glb"
         alt="Cat Anatomy"
         camera-controls
         disable-tap
