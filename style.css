@@ -196,6 +196,39 @@ body.dark-mode .model-viewer .loading-overlay {
   margin: 0;
 }
 
+/* Hotspot styling */
+.model-viewer .Hotspot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.9);
+  background: rgba(0, 123, 255, 0.9);
+  box-shadow: var(--hotspot-shadow, 0 2px 6px rgba(0,0,0,0.35));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.hidden { display: none !important; }
+
+/* Annotation label styling */
+.HotspotAnnotation {
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  border-radius: 6px;
+  box-shadow: var(--hotspot-shadow, 0 2px 6px rgba(0,0,0,0.3));
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translateY(-10px);
+}
+.model-viewer .Hotspot.hidden {
+  display: none !important;
+}
+
 /* ===============================
    Theme Toggle
    =============================== */
